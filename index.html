@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>DISTORY 견적 시스템</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--nav-w:200px;--color-bg:#ffffff;--color-bg2:#f5f5f5;--color-bg3:#eeeeee;--color-text:#111111;--color-text2:#666666;--color-text3:#999999;--color-border:#e0e0e0;--color-border2:#cccccc;--color-info-bg:#e8f0fe;--color-info-text:#1a56db;--color-success-bg:#e3f9e5;--color-success-text:#1a7431;--color-warn-bg:#fff8e1;--color-warn-text:#b45309;--color-danger-bg:#fdecea;--color-danger-text:#b91c1c}
+body{font-family:Arial,sans-serif;background:var(--color-bg2);min-height:100vh}
+.layout{display:flex;min-height:100vh}
+.nav{width:var(--nav-w);background:var(--color-bg);border-right:0.5px solid var(--color-border);padding:1.25rem 0;position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column}
+.nav-logo{padding:0 1.25rem 1.25rem;border-bottom:0.5px solid var(--color-border);margin-bottom:0.75rem}
+.nav-logo h1{font-size:14px;font-weight:700;color:var(--color-text);letter-spacing:.5px}
+.nav-logo p{font-size:11px;color:var(--color-text2);margin-top:2px}
+.nav-section{padding:0.5rem 0.75rem;font-size:10px;color:var(--color-text3);text-transform:uppercase;letter-spacing:.8px;margin-top:0.5rem}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 1.25rem;font-size:13px;color:var(--color-text2);cursor:pointer;border-left:2px solid transparent;transition:all .15s}
+.nav-item:hover{background:var(--color-bg2);color:var(--color-text)}
+.nav-item.active{background:var(--color-bg2);color:var(--color-text);border-left-color:var(--color-text);font-weight:600}
+.nav-item i{font-size:15px;width:16px;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--color-danger-bg);color:var(--color-danger-text);font-size:10px;padding:1px 6px;border-radius:10px}
+.nav-bottom{margin-top:auto;padding:1rem 1.25rem;border-top:0.5px solid var(--color-border)}
+.avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;background:var(--color-info-bg);color:var(--color-info-text);flex-shrink:0}
+.user-chip{display:flex;align-items:center;gap:8px}
+.user-info p{font-size:12px;font-weight:600;color:var(--color-text)}
+.user-info span{font-size:10px;color:var(--color-text2)}
+.main{margin-left:var(--nav-w);flex:1;padding:0}
+.page{display:none;padding:1.5rem}
+.page.active{display:block}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+.page-header h2{font-size:18px;font-weight:600;color:var(--color-text)}
+.page-header p{font-size:13px;color:var(--color-text2);margin-top:2px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;font-size:13px;border:0.5px solid var(--color-border2);border-radius:8px;cursor:pointer;background:var(--color-bg);color:var(--color-text);transition:all .15s;font-family:Arial,sans-serif}
+.btn:hover{background:var(--color-bg2)}
+.btn-primary{background:var(--color-text);color:#fff;border-color:var(--color-text)}
+.btn-primary:hover{opacity:.85}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-sync{background:#1a56db;color:#fff;border-color:#1a56db}
+.btn-sync:hover{opacity:.85}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem}
+.stat-card{background:var(--color-bg2);border-radius:8px;padding:1rem}
+.stat-card .label{font-size:12px;color:var(--color-text2);margin-bottom:6px}
+.stat-card .value{font-size:22px;font-weight:600;color:var(--color-text)}
+.stat-card .sub{font-size:11px;color:var(--color-text3);margin-top:3px}
+.card{background:var(--color-bg);border:0.5px solid var(--color-border);border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.card-header h3{font-size:14px;font-weight:600;color:var(--color-text)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 12px;font-size:11px;font-weight:600;color:var(--color-text2);border-bottom:0.5px solid var(--color-border);text-transform:uppercase;letter-spacing:.5px}
+td{padding:9px 12px;border-bottom:0.5px solid var(--color-border);color:var(--color-text)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--color-bg2)}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.badge-done{background:var(--color-success-bg);color:var(--color-success-text)}
+.badge-prog{background:var(--color-warn-bg);color:var(--color-warn-text)}
+.badge-pend{background:var(--color-bg2);color:var(--color-text2)}
+.badge-miss{background:var(--color-danger-bg);color:var(--color-danger-text)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+label{font-size:12px;color:var(--color-text2);font-weight:600}
+input,select,textarea{padding:7px 10px;border:0.5px solid var(--color-border2);border-radius:8px;font-size:13px;font-family:Arial,sans-serif;background:var(--color-bg);color:var(--color-text);width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#666}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.estimate-row{display:grid;grid-template-columns:2fr 80px 80px 100px 80px 100px;gap:8px;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--color-border)}
+.estimate-row:last-child{border-bottom:none}
+.estimate-header{font-size:11px;font-weight:600;color:var(--color-text2);text-transform:uppercase;letter-spacing:.4px}
+.total-row{display:flex;justify-content:flex-end;gap:1.5rem;padding:12px 0;border-top:1px solid var(--color-border2);margin-top:8px}
+.total-row .label{font-size:13px;color:var(--color-text2)}
+.total-row .value{font-size:16px;font-weight:600;color:var(--color-text)}
+.alert{padding:10px 14px;border-radius:8px;font-size:13px;display:flex;align-items:flex-start;gap:8px;margin-bottom:0.75rem}
+.alert-warn{background:var(--color-warn-bg);color:var(--color-warn-text)}
+.alert-info{background:var(--color-info-bg);color:var(--color-info-text)}
+.alert i{margin-top:1px;flex-shrink:0}
+.tabs{display:flex;gap:0;border-bottom:0.5px solid var(--color-border);margin-bottom:1.25rem}
+.tab{padding:8px 16px;font-size:13px;cursor:pointer;color:var(--color-text2);border-bottom:2px solid transparent;margin-bottom:-0.5px;transition:all .15s}
+.tab.active{color:var(--color-text);font-weight:600;border-bottom-color:var(--color-text)}
+.price-chip{font-size:12px;color:var(--color-info-text);background:var(--color-info-bg);padding:2px 7px;border-radius:6px}
+.missing-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:8px;background:var(--color-bg2);margin-bottom:6px}
+.missing-item .brand{font-size:11px;color:var(--color-text2)}
+.missing-item .item{font-size:13px;color:var(--color-text)}
+
+/* 로그인 화면 */
+.lock-screen{position:fixed;inset:0;background:var(--color-bg2);display:flex;align-items:center;justify-content:center;z-index:100}
+.login-card{background:var(--color-bg);border:0.5px solid var(--color-border2);border-radius:12px;padding:2rem;width:360px}
+.login-card h2{font-size:16px;font-weight:600;margin-bottom:4px}
+.login-card p{font-size:13px;color:var(--color-text2);margin-bottom:1.5rem}
+.role-select{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1.25rem}
+.role-btn{padding:12px;border:0.5px solid var(--color-border);border-radius:8px;cursor:pointer;text-align:center;background:var(--color-bg);transition:all .15s}
+.role-btn:hover{background:var(--color-bg2)}
+.role-btn.selected{border-color:var(--color-text);background:var(--color-bg2)}
+.role-btn .name{font-size:13px;font-weight:600;color:var(--color-text)}
+.role-btn .type{font-size:11px;color:var(--color-text2);margin-top:2px}
+.pw-group{margin-bottom:1rem}
+.pw-group label{display:block;font-size:12px;color:var(--color-text2);font-weight:600;margin-bottom:5px}
+.pw-error{font-size:12px;color:var(--color-danger-text);margin-top:6px;display:none}
+
+/* 동기화 상태 */
+.sync-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--color-bg);border:0.5px solid var(--color-border);border-radius:8px;margin-bottom:1rem}
+.sync-status{font-size:12px;color:var(--color-text2)}
+.sync-status.synced{color:var(--color-success-text)}
+.sync-status.syncing{color:var(--color-info-text)}
+
+/* 월 필터 */
+.filter-row{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
+.filter-row label{font-size:12px;color:var(--color-text2);font-weight:600;white-space:nowrap}
+.filter-row select{width:auto;min-width:120px}
+
+/* 구글 시트 연동 안내 모달 */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;z-index:200;display:none}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:12px;padding:2rem;width:560px;max-height:80vh;overflow-y:auto}
+.modal h3{font-size:16px;font-weight:600;margin-bottom:1rem}
+.modal-close{float:right;cursor:pointer;color:var(--color-text2);font-size:18px;line-height:1}
+.step-box{background:var(--color-bg2);border-radius:8px;padding:1rem;margin-bottom:0.75rem}
+.step-box .step-num{font-size:11px;font-weight:700;color:var(--color-info-text);margin-bottom:4px}
+.step-box p{font-size:13px;color:var(--color-text);line-height:1.6}
+.step-box code{background:#e8e8e8;padding:2px 6px;border-radius:4px;font-size:12px;font-family:monospace}
+.url-input-group{display:flex;gap:8px;margin-top:8px}
+.url-input-group input{flex:1}
+/* 견적서 시트 탭 */
+.sheet-tab{padding:7px 14px;font-size:12px;cursor:pointer;color:var(--color-text2);border-bottom:2px solid transparent;margin-bottom:-0.5px;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:6px;border:0.5px solid var(--color-border);border-bottom:none;border-radius:6px 6px 0 0;background:var(--color-bg2);margin-right:3px}
+.sheet-tab.active{background:var(--color-bg);color:var(--color-text);font-weight:600;border-color:var(--color-border2);border-bottom:1px solid var(--color-bg)}
+.sheet-tab .del-tab{color:var(--color-text3);font-size:11px;line-height:1;padding:1px 3px;border-radius:3px}
+.sheet-tab .del-tab:hover{background:var(--color-danger-bg);color:var(--color-danger-text)}
+/* 견적서 본문 */
+.est-sheet{display:none}
+.est-sheet.active{display:block}
+.est-header-box{background:var(--color-bg);border:0.5px solid var(--color-border);border-radius:10px;padding:1.25rem;margin-bottom:1rem}
+.est-header-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px}
+.est-items-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.est-items-table th{background:var(--color-bg2);padding:7px 10px;font-size:11px;font-weight:600;color:var(--color-text2);border:0.5px solid var(--color-border);text-align:center}
+.est-items-table td{padding:5px 8px;border:0.5px solid var(--color-border);vertical-align:middle}
+.est-items-table td input{border:none;background:transparent;padding:2px 4px;width:100%;font-size:13px}
+.est-items-table td input:focus{outline:none;background:var(--color-info-bg)}
+.est-items-table td.num{text-align:right}
+.est-items-table td.center{text-align:center}
+.est-total-row{display:flex;justify-content:flex-end;align-items:center;gap:1rem;padding:10px 0;border-top:1px solid var(--color-border2);margin-top:4px}
+.est-seq{color:var(--color-text3);font-size:12px;text-align:center;width:28px}
+.btn-row-add{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;font-size:12px;border:0.5px dashed var(--color-border2);border-radius:6px;cursor:pointer;background:transparent;color:var(--color-text2);margin-top:6px}
+.btn-row-add:hover{background:var(--color-bg2)}
+</style>
+</head>
+<body>
+
+<!-- 로그인 화면 (관리자 + 디자이너만) -->
+<div class="lock-screen" id="lockScreen">
+  <div class="login-card">
+    <h2>디스토리 견적 시스템</h2>
+    <p>역할을 선택하고 비밀번호를 입력하세요</p>
+    <div class="role-select">
+      <div class="role-btn selected" onclick="selectRole(this,'admin','박소정')">
+        <div class="name">관리자</div><div class="type">전체 권한</div>
+      </div>
+      <div class="role-btn" onclick="selectRole(this,'designer','디자이너')">
+        <div class="name">디자이너</div><div class="type">업무일지 전용</div>
+      </div>
+    </div>
+    <div class="pw-group">
+      <label>비밀번호</label>
+      <input type="password" id="pwInput" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')login()">
+      <div class="pw-error" id="pwError">비밀번호가 올바르지 않습니다.</div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="login()">로그인</button>
+  </div>
+</div>
+
+<!-- 구글 시트 연동 안내 모달 -->
+<div class="modal-overlay" id="syncGuideModal">
+  <div class="modal">
+    <span class="modal-close" onclick="document.getElementById('syncGuideModal').classList.remove('open')">✕</span>
+    <h3>📋 구글 시트 연동 방법</h3>
+
+    <div class="step-box">
+      <div class="step-num">STEP 1 — 구글 시트 Apps Script 설정</div>
+      <p>연동할 구글 시트를 열고 상단 메뉴에서 <strong>확장 프로그램 → Apps Script</strong>를 클릭하세요.</p>
+    </div>
+    <div class="step-box">
+      <div class="step-num">STEP 2 — 아래 코드 붙여넣기</div>
+      <p>Apps Script 편집기에 기존 내용을 지우고 아래 코드를 붙여넣으세요.</p>
+      <pre style="background:#1e1e1e;color:#d4d4d4;padding:12px;border-radius:6px;font-size:11px;margin-top:8px;overflow-x:auto;white-space:pre-wrap">function doGet(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+  var rows = data.slice(1).map(function(row) {
+    var obj = {};
+    headers.forEach(function(h, i) { obj[h] = row[i]; });
+    return obj;
+  });
+  return ContentService
+    .createTextOutput(JSON.stringify({data: rows}))
+    .setMimeType(ContentService.MimeType.JSON);
+}</pre>
+    </div>
+    <div class="step-box">
+      <div class="step-num">STEP 3 — 웹앱으로 배포</div>
+      <p>상단 <strong>배포 → 새 배포</strong> 클릭 → 유형: <strong>웹 앱</strong> → 액세스: <strong>모든 사용자</strong> → 배포 클릭</p>
+      <p style="margin-top:6px">생성된 <strong>웹 앱 URL</strong>을 복사하세요.</p>
+    </div>
+    <div class="step-box">
+      <div class="step-num">STEP 4 — 아래에 URL 등록</div>
+      <p>팀원별 구글 시트 URL을 입력 후 저장하세요. 이후 동기화 버튼으로 데이터를 불러올 수 있습니다.</p>
+    </div>
+
+    <div style="margin-top:1rem">
+      <div style="font-size:12px;font-weight:600;color:var(--color-text2);margin-bottom:8px">팀원별 Apps Script URL 등록</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="url-input-group"><span style="font-size:12px;min-width:60px;padding-top:8px">박지혜</span><input type="text" id="url-박지혜" placeholder="Apps Script 웹앱 URL 입력"></div>
+        <div class="url-input-group"><span style="font-size:12px;min-width:60px;padding-top:8px">이산호</span><input type="text" id="url-이산호" placeholder="Apps Script 웹앱 URL 입력"></div>
+        <div class="url-input-group"><span style="font-size:12px;min-width:60px;padding-top:8px">류미리</span><input type="text" id="url-류미리" placeholder="Apps Script 웹앱 URL 입력"></div>
+        <div class="url-input-group"><span style="font-size:12px;min-width:60px;padding-top:8px">박소정</span><input type="text" id="url-박소정" placeholder="Apps Script 웹앱 URL 입력"></div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:12px;width:100%;justify-content:center" onclick="saveUrls()"><i class="ti ti-device-floppy"></i> URL 저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <nav class="nav">
+    <div class="nav-logo"><h1>DISTORY</h1><p id="navUserName">견적 관리 시스템</p></div>
+    <div class="nav-section">업무</div>
+    <div class="nav-item active" onclick="goPage('dashboard',this)"><i class="ti ti-layout-dashboard"></i> 대시보드</div>
+    <div class="nav-item" onclick="goPage('worklog',this)"><i class="ti ti-clipboard-list"></i> 업무일지</div>
+    <div class="nav-item admin-only" onclick="goPage('estimate',this)"><i class="ti ti-file-invoice"></i> 견적서 작성</div>
+    <div class="nav-item admin-only" onclick="goPage('check',this)"><i class="ti ti-circle-check"></i> 누락 확인<span class="nav-badge" id="missBadge">3</span></div>
+    <div class="nav-section admin-only">관리</div>
+    <div class="nav-item admin-only" onclick="goPage('pricing',this)"><i class="ti ti-table"></i> 단가표 관리</div>
+    <div class="nav-item admin-only" onclick="goPage('history',this)"><i class="ti ti-history"></i> 견적 히스토리</div>
+    <div class="nav-bottom">
+      <div class="user-chip">
+        <div class="avatar" id="navAvatar">A</div>
+        <div class="user-info"><p id="navUserLabel">관리자</p><span id="navUserRole">전체 권한</span></div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <!-- 대시보드 -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div><h2>대시보드</h2><p>2026년 5월 현황</p></div>
+        <button class="btn btn-primary admin-only" onclick="goPage('estimate',document.querySelector('[onclick*=estimate]'))"><i class="ti ti-plus"></i> 새 견적서</button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="label">이번 달 견적</div><div class="value">12건</div><div class="sub">전월 대비 +2</div></div>
+        <div class="stat-card"><div class="label">진행중 업무</div><div class="value">47건</div><div class="sub">4명 담당</div></div>
+        <div class="stat-card admin-only"><div class="label">누락 의심 항목</div><div class="value" style="color:var(--color-danger-text)">3건</div><div class="sub">확인 필요</div></div>
+        <div class="stat-card admin-only"><div class="label">이번 달 합계</div><div class="value">24,891,000</div><div class="sub">원 (VAT 별도)</div></div>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header"><h3>최근 업무일지</h3></div>
+          <table>
+            <tr><th>작업자</th><th>브랜드</th><th>품목</th><th>상태</th></tr>
+            <tr><td>박지혜</td><td>Persil</td><td>[PKG] 디스크 파워 26입</td><td><span class="badge badge-done">완료</span></td></tr>
+            <tr><td>이산호</td><td>FIK</td><td>[WEB] 홈매트 맥스제로</td><td><span class="badge badge-prog">진행</span></td></tr>
+            <tr><td>류미리</td><td>Persil</td><td>[PKG] 파워젤 1.5L 번들</td><td><span class="badge badge-done">완료</span></td></tr>
+            <tr><td>박소정</td><td>FIK</td><td>[PKG] 마이키파 기피제</td><td><span class="badge badge-prog">진행</span></td></tr>
+          </table>
+        </div>
+        <div class="card admin-only">
+          <div class="card-header"><h3>최근 견적서</h3></div>
+          <table>
+            <tr><th>월</th><th>클라이언트</th><th>금액</th></tr>
+            <tr><td>26E</td><td>헨켈 HomeCare</td><td>7,479,000원</td></tr>
+            <tr><td>26D</td><td>Thermos</td><td>2,450,000원</td></tr>
+            <tr><td>26D</td><td>Unilever</td><td>1,310,000원</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 업무일지 -->
+    <div class="page" id="page-worklog">
+      <div class="page-header">
+        <div><h2>업무일지</h2><p>전체 작업 현황</p></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn" onclick="openSyncGuide()"><i class="ti ti-settings"></i> 연동 설정</button>
+          <button class="btn btn-sync" onclick="syncSheets()"><i class="ti ti-refresh"></i> 구글 시트 동기화</button>
+        </div>
+      </div>
+
+      <!-- 동기화 상태 바 -->
+      <div class="sync-bar">
+        <i class="ti ti-cloud" style="color:var(--color-text3)"></i>
+        <span class="sync-status" id="syncStatus">마지막 동기화: 없음 (동기화 버튼을 눌러 데이터를 불러오세요)</span>
+      </div>
+
+      <!-- 월 필터 -->
+      <div class="filter-row">
+        <label>기간 선택</label>
+        <select id="monthFilter" onchange="filterWorklog()">
+          <option value="all">전체 보기</option>
+          <option value="26E" selected>2026년 5월 (26E)</option>
+          <option value="26D">2026년 4월 (26D)</option>
+          <option value="26C">2026년 3월 (26C)</option>
+          <option value="26B">2026년 2월 (26B)</option>
+          <option value="26A">2026년 1월 (26A)</option>
+          <option value="25L">2025년 12월 (25L)</option>
+          <option value="25K">2025년 11월 (25K)</option>
+        </select>
+        <span style="font-size:12px;color:var(--color-text3)" id="filterCount"></span>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab(this,'wl-henkel')">헨켈</div>
+        <div class="tab" onclick="switchTab(this,'wl-unilever')">유니레버</div>
+        <div class="tab" onclick="switchTab(this,'wl-thermos')">써모스</div>
+      </div>
+
+      <div id="wl-henkel">
+        <div class="card" style="padding:0"><table id="tbl-henkel">
+          <tr><th>Part</th><th>작업시작</th><th>담당자</th><th>작업자</th><th>품목</th><th>분류</th><th>수량</th><th>진행상황</th></tr>
+          <tr data-month="26E"><td>Persil</td><td>26E08</td><td>백서현</td><td>박지혜</td><td>[WEB] 파워젤 리뉴얼 안내 웹배너</td><td>NEW</td><td>1</td><td><span class="badge badge-done">완료</span></td></tr>
+          <tr data-month="26D"><td>Persil</td><td>26D07</td><td>백서현</td><td>박지혜</td><td>[PKG] 어드밴스드젤 4L / 보틀</td><td>Modify</td><td>1</td><td><span class="badge badge-prog">진행</span></td></tr>
+          <tr data-month="26D"><td>Persil</td><td>26D10</td><td>백서현</td><td>이산호</td><td>[IMG] 아이코닉 2L / 팩샷</td><td>Variation</td><td>8</td><td><span class="badge badge-done">완료</span></td></tr>
+          <tr data-month="26E"><td>FIK</td><td>26E08</td><td>김혜린</td><td>박소정</td><td>[PKG] 마이키파 기피제 기획팩</td><td>NEW</td><td>1</td><td><span class="badge badge-prog">진행</span></td></tr>
+          <tr data-month="26C"><td>Pril</td><td>26C15</td><td>이지은</td><td>류미리</td><td>[PKG] 파워젤 용기 수정</td><td>Modify</td><td>2</td><td><span class="badge badge-done">완료</span></td></tr>
+          <tr data-month="26B"><td>FIK</td><td>26B03</td><td>김혜린</td><td>박소정</td><td>[WEB] 홈매트 신규 배너</td><td>NEW</td><td>3</td><td><span class="badge badge-done">완료</span></td></tr>
+        </table></div>
+      </div>
+
+      <div id="wl-unilever" style="display:none">
+        <div class="card" style="padding:0"><table id="tbl-unilever">
+          <tr><th>Brand</th><th>진행상황</th><th>담당자</th><th>작업자</th><th>품목</th><th>분류</th><th>수량</th></tr>
+          <tr data-month="26E"><td>Lipton</td><td><span class="badge badge-prog">작업중</span></td><td>정민영</td><td>이산호</td><td>[SHIP] 콤부차 복숭아 30T</td><td>NEW</td><td>1</td></tr>
+          <tr data-month="26D"><td>Snuggle</td><td><span class="badge badge-done">완료</span></td><td>정민영</td><td>이산호</td><td>[PKG] 섬유탈취제 100ml 팩샷</td><td>NEW</td><td>2</td></tr>
+          <tr data-month="26C"><td>Dove</td><td><span class="badge badge-done">완료</span></td><td>정민영</td><td>박지혜</td><td>[WEB] 바디워시 상세페이지</td><td>NEW</td><td>1</td></tr>
+        </table></div>
+      </div>
+
+      <div id="wl-thermos" style="display:none">
+        <div class="card" style="padding:0"><table id="tbl-thermos">
+          <tr><th>작업시작</th><th>담당자</th><th>작업자</th><th>품목</th><th>분류</th><th>수량</th><th>진행상황</th></tr>
+          <tr data-month="26C"><td>26C03</td><td>권유진</td><td>박지혜</td><td>[IC] JNL-S250K</td><td>A</td><td>1</td><td><span class="badge badge-done">완료</span></td></tr>
+          <tr data-month="26B"><td>26B20</td><td>박소윤</td><td>박지혜</td><td>[IC] KFC-024K</td><td>수정B</td><td>1</td><td><span class="badge badge-prog">진행</span></td></tr>
+          <tr data-month="26A"><td>26A10</td><td>권유진</td><td>박지혜</td><td>[IS] JNL-S450 설명서</td><td>신규</td><td>4</td><td><span class="badge badge-done">완료</span></td></tr>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- 견적서 작성 -->
+    <div class="page" id="page-estimate">
+      <div class="page-header">
+        <div><h2>견적서 작성</h2><p>실제 견적서 포맷으로 작성 후 시트 생성</p></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn" onclick="resetEstimate()"><i class="ti ti-refresh"></i> 초기화</button>
+          <button class="btn" onclick="addSheet()"><i class="ti ti-plus"></i> 시트 추가</button>
+          <button class="btn btn-primary" onclick="generateEstimate()"><i class="ti ti-file-download"></i> 견적서 생성 (Excel)</button>
+        </div>
+      </div>
+
+      <!-- 시트 탭 -->
+      <div style="display:flex;align-items:center;gap:0;border-bottom:0.5px solid var(--color-border);margin-bottom:1rem;overflow-x:auto">
+        <div id="sheetTabs" style="display:flex;gap:0"></div>
+      </div>
+
+      <!-- 시트 컨텐츠 영역 -->
+      <div id="sheetContents"></div>
+    </div>
+
+    <!-- 누락 확인 -->
+    <div class="page" id="page-check">
+      <div class="page-header"><div><h2>누락 확인</h2><p>업무일지 ↔ 견적서 대조</p></div></div>
+      <div class="alert alert-warn"><i class="ti ti-alert-triangle"></i><div><strong>3건</strong>의 누락 의심 항목이 발견되었습니다.</div></div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header"><h3>누락 의심 항목</h3><span class="badge badge-miss">3건</span></div>
+          <div class="missing-item"><div class="left"><div><div class="brand">Persil · 박지혜 · 26E</div><div class="item">[WEB] 파워젤 리뉴얼 안내 웹배너</div></div></div><button class="btn btn-sm" onclick="markOk(this)">확인</button></div>
+          <div class="missing-item"><div class="left"><div><div class="brand">FIK · 박소정 · 26E</div><div class="item">[PKG] 마이키파 기피제 기획팩</div></div></div><button class="btn btn-sm" onclick="markOk(this)">확인</button></div>
+          <div class="missing-item"><div class="left"><div><div class="brand">Lipton · 이산호 · 26D</div><div class="item">[SHIP] 콤부차 복숭아 외박스</div></div></div><button class="btn btn-sm" onclick="markOk(this)">확인</button></div>
+        </div>
+        <div class="card"><div class="card-header"><h3>확인 완료</h3><span class="badge badge-done" id="okCount">0건</span></div><div id="okList" style="font-size:13px;color:var(--color-text2)">없음</div></div>
+      </div>
+    </div>
+
+    <!-- 단가표 관리 -->
+    <div class="page" id="page-pricing">
+      <div class="page-header"><div><h2>단가표 관리</h2><p>클라이언트별 단가 수정</p></div><button class="btn btn-primary" onclick="alert('저장 완료')"><i class="ti ti-device-floppy"></i> 저장</button></div>
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab(this,'pt-henkel')">헨켈</div>
+        <div class="tab" onclick="switchTab(this,'pt-thermos')">써모스</div>
+        <div class="tab" onclick="switchTab(this,'pt-unilever')">유니레버</div>
+      </div>
+      <div id="pt-henkel"><div class="card" style="padding:0"><table>
+        <tr><th>분류</th><th>작업타입</th><th>조건</th><th>단가(원)</th></tr>
+        <tr><td>PKG</td><td>NEW</td><td>신규 패키지 (메인)</td><td><input type="number" value="275000" style="width:110px;text-align:right"></td></tr>
+        <tr><td>PKG</td><td>NEW</td><td>SHIP 포함</td><td><input type="number" value="68000" style="width:110px;text-align:right"></td></tr>
+        <tr><td>PKG</td><td>NEW</td><td>팩샷/목업</td><td><input type="number" value="30000" style="width:110px;text-align:right"></td></tr>
+        <tr><td>PKG</td><td>Variation</td><td>기존에서 파생</td><td><input type="number" value="137000" style="width:110px;text-align:right"></td></tr>
+        <tr><td>PKG</td><td>Modify</td><td>5도 이상</td><td><input type="number" value="100000" style="width:110px;text-align:right"></td></tr>
+        <tr><td>PKG</td><td>Modify</td><td>단순수정</td><td><input type="number" value="50000" style="width:110px;text-align:right"></td></tr>
+        <tr><td>WEB</td><td>NEW</td><td>메인배너/웹상세</td><td><input type="number" value="137000" style="width:110px;text-align:right"></td></tr>
+        <tr><td>WEB</td><td>NEW</td><td>썸네일/소형</td><td><input type="number" value="30000" style="width:110px;text-align:right"></td></tr>
+        <tr><td>WEB</td><td>Variation</td><td>배너 수정</td><td><input type="number" value="68000" style="width:110px;text-align:right"></td></tr>
+        <tr><td>프로세스</td><td>인계</td><td>PKG 일반</td><td><input type="number" value="141000" style="width:110px;text-align:right"></td></tr>
+        <tr><td>프로세스</td><td>인계</td><td>소형/록타이트</td><td><input type="number" value="93000" style="width:110px;text-align:right"></td></tr>
+      </table></div></div>
+      <div id="pt-thermos" style="display:none"><div class="card" style="padding:0"><table>
+        <tr><th>분류</th><th>타입</th><th>단가(원)</th></tr>
+        <tr><td>IC/Sleeves</td><td>신규 A/B</td><td><input type="number" value="300000" style="width:110px;text-align:right"></td></tr>
+        <tr><td>IC/Sleeves</td><td>수정A</td><td><input type="number" value="150000" style="width:110px;text-align:right"></td></tr>
+        <tr><td>IC/Sleeves</td><td>수정B</td><td><input type="number" value="100000" style="width:110px;text-align:right"></td></tr>
+        <tr><td>Tag/Label</td><td>NEW</td><td><input type="number" value="50000" style="width:110px;text-align:right"></td></tr>
+        <tr><td>IS</td><td>신규 (페이지당)</td><td><input type="number" value="20000" style="width:110px;text-align:right"></td></tr>
+        <tr><td>IS</td><td>수정 (페이지당)</td><td><input type="number" value="15000" style="width:110px;text-align:right"></td></tr>
+        <tr><td>IMG</td><td>일러스트/합성</td><td><input type="number" value="100000" style="width:110px;text-align:right"></td></tr>
+        <tr><td>SHIP</td><td>세트</td><td><input type="number" value="50000" style="width:110px;text-align:right"></td></tr>
+      </table></div></div>
+      <div id="pt-unilever" style="display:none"><div class="card" style="padding:0"><table>
+        <tr><th>분류</th><th>타입</th><th>조건</th><th>단가(원)</th></tr>
+        <tr><td>PKG</td><td>NEW</td><td>프로젝트급</td><td><input type="number" value="700000" style="width:110px;text-align:right"></td></tr>
+        <tr><td>PKG</td><td>NEW</td><td>일반</td><td><input type="number" value="500000" style="width:110px;text-align:right"></td></tr>
+        <tr><td>PKG</td><td>Modify</td><td></td><td><input type="number" value="250000" style="width:110px;text-align:right"></td></tr>
+        <tr><td>PKG</td><td>SHIP</td><td></td><td><input type="number" value="100000" style="width:110px;text-align:right"></td></tr>
+        <tr><td>WEB</td><td>NEW</td><td>메인페이지</td><td><input type="number" value="200000" style="width:110px;text-align:right"></td></tr>
+        <tr><td>WEB</td><td>Variation</td><td></td><td><input type="number" value="100000" style="width:110px;text-align:right"></td></tr>
+        <tr><td>WEB</td><td>Variation</td><td>리사이징/썸네일</td><td><input type="number" value="30000" style="width:110px;text-align:right"></td></tr>
+        <tr><td>IMG</td><td>NEW</td><td>스튜디오 촬영</td><td><input type="number" value="500000" style="width:110px;text-align:right"></td></tr>
+      </table></div></div>
+    </div>
+
+    <!-- 히스토리 -->
+    <div class="page" id="page-history">
+      <div class="page-header"><div><h2>견적 히스토리</h2><p>과거 견적서 조회</p></div></div>
+      <div class="card" style="padding:0"><table>
+        <tr><th>월</th><th>클라이언트</th><th>브랜드</th><th>금액</th><th>작성일</th><th>다운로드</th></tr>
+        <tr><td>26E</td><td>헨켈 HomeCare</td><td>Persil</td><td>7,479,000원</td><td>2026-04-21</td><td><button class="btn btn-sm"><i class="ti ti-download"></i></button></td></tr>
+        <tr><td>26D</td><td>Thermos</td><td>KFM/KFJ</td><td>2,450,000원</td><td>2026-03-20</td><td><button class="btn btn-sm"><i class="ti ti-download"></i></button></td></tr>
+        <tr><td>26D</td><td>Unilever</td><td>Snuggle</td><td>1,310,000원</td><td>2026-03-20</td><td><button class="btn btn-sm"><i class="ti ti-download"></i></button></td></tr>
+        <tr><td>26C</td><td>헨켈 HomeCare</td><td>Persil</td><td>3,550,000원</td><td>2026-03-17</td><td><button class="btn btn-sm"><i class="ti ti-download"></i></button></td></tr>
+        <tr><td>26B</td><td>헨켈 HomeCare</td><td>Persil</td><td>3,051,000원</td><td>2026-02-23</td><td><button class="btn btn-sm"><i class="ti ti-download"></i></button></td></tr>
+      </table></div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ==================== 설정 ====================
+// 비밀번호 설정 (여기서 변경하세요)
+const PASSWORDS = {
+  admin: 'distory2026',    // 관리자 비밀번호
+  designer: 'design2026'  // 디자이너 비밀번호
+};
+
+let currentRole='admin', selectedRole='admin', selectedUser='박소정';
+let itemCount=0, okItems=[];
+
+// ==================== 로그인 ====================
+function selectRole(el, role, user) {
+  document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedRole = role;
+  selectedUser = role === 'admin' ? '박소정' : '디자이너';
+  document.getElementById('pwError').style.display = 'none';
+  document.getElementById('pwInput').value = '';
+}
+
+function login() {
+  const pw = document.getElementById('pwInput').value;
+  const correctPw = PASSWORDS[selectedRole];
+  if (pw !== correctPw) {
+    document.getElementById('pwError').style.display = 'block';
+    document.getElementById('pwInput').focus();
+    return;
+  }
+  currentRole = selectedRole;
+  document.getElementById('lockScreen').style.display = 'none';
+  document.getElementById('navUserLabel').textContent = currentRole === 'admin' ? '박소정 (관리자)' : '디자이너';
+  document.getElementById('navUserRole').textContent = currentRole === 'admin' ? '전체 권한' : '업무일지 전용';
+  document.getElementById('navUserName').textContent = currentRole === 'admin' ? '박소정' : '디자이너';
+  document.getElementById('navAvatar').textContent = currentRole === 'admin' ? '소' : 'D';
+  document.querySelectorAll('.admin-only').forEach(el => {
+    el.style.display = currentRole === 'admin' ? '' : 'none';
+  });
+  if (currentRole === 'admin') {
+    document.querySelectorAll('.nav-item.admin-only').forEach(el => el.style.display = 'flex');
+    document.querySelectorAll('.nav-section.admin-only').forEach(el => el.style.display = '');
+  }
+  // 로그인 후 기본 월 필터 적용
+  filterWorklog();
+}
+
+// ==================== 네비게이션 ====================
+function goPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const pg = document.getElementById('page-' + id);
+  if (pg) pg.classList.add('active');
+  if (el) el.classList.add('active');
+}
+
+function switchTab(el, targetId) {
+  const parent = el.parentElement;
+  parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const container = parent.parentElement;
+  Array.from(container.children).forEach(s => {
+    if (s.id) s.style.display = s.id === targetId ? '' : 'none';
+  });
+  filterWorklog(); // 탭 변경 시 필터 재적용
+}
+
+// ==================== 구글 시트 동기화 ====================
+function openSyncGuide() {
+  // 저장된 URL 불러오기
+  ['박지혜','이산호','류미리','박소정'].forEach(name => {
+    const saved = localStorage.getItem('sheetUrl_' + name);
+    if (saved) document.getElementById('url-' + name).value = saved;
+  });
+  document.getElementById('syncGuideModal').classList.add('open');
+}
+
+function saveUrls() {
+  ['박지혜','이산호','류미리','박소정'].forEach(name => {
+    const val = document.getElementById('url-' + name).value.trim();
+    if (val) localStorage.setItem('sheetUrl_' + name, val);
+  });
+  alert('URL이 저장되었습니다.\n이제 동기화 버튼을 눌러 데이터를 불러오세요.');
+  document.getElementById('syncGuideModal').classList.remove('open');
+}
+
+async function syncSheets() {
+  const names = ['박지혜','이산호','류미리','박소정'];
+  const urls = names.map(n => localStorage.getItem('sheetUrl_' + n)).filter(Boolean);
+
+  if (urls.length === 0) {
+    if (confirm('아직 구글 시트 URL이 등록되지 않았습니다.\n연동 설정 화면을 열까요?')) openSyncGuide();
+    return;
+  }
+
+  const statusEl = document.getElementById('syncStatus');
+  statusEl.className = 'sync-status syncing';
+  statusEl.textContent = '동기화 중...';
+
+  try {
+    let allData = [];
+    for (const url of urls) {
+      try {
+        const res = await fetch(url);
+        const json = await res.json();
+        if (json.data) allData = allData.concat(json.data);
+      } catch(e) {
+        console.warn('URL 오류:', url, e);
+      }
+    }
+
+    if (allData.length > 0) {
+      localStorage.setItem('worklogData', JSON.stringify(allData));
+      renderSyncedData(allData);
+    }
+
+    const now = new Date();
+    const timeStr = now.getFullYear() + '.' + String(now.getMonth()+1).padStart(2,'0') + '.' + String(now.getDate()).padStart(2,'0') + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+    localStorage.setItem('lastSync', timeStr);
+    statusEl.className = 'sync-status synced';
+    statusEl.textContent = '마지막 동기화: ' + timeStr + ' (총 ' + allData.length + '건)';
+  } catch(e) {
+    statusEl.className = 'sync-status';
+    statusEl.textContent = '동기화 실패. URL을 확인해주세요.';
+  }
+}
+
+function renderSyncedData(data) {
+  // 실제 연동 시 여기서 테이블을 동적으로 채웁니다
+  // 현재는 샘플 데이터 표시 유지
+  filterWorklog();
+}
+
+// 저장된 동기화 상태 복원
+window.addEventListener('load', () => {
+  const lastSync = localStorage.getItem('lastSync');
+  if (lastSync) {
+    const statusEl = document.getElementById('syncStatus');
+    if (statusEl) {
+      statusEl.className = 'sync-status synced';
+      statusEl.textContent = '마지막 동기화: ' + lastSync;
+    }
+  }
+});
+
+// ==================== 월 필터 ====================
+function filterWorklog() {
+  const filter = document.getElementById('monthFilter').value;
+  const tables = ['tbl-henkel', 'tbl-unilever', 'tbl-thermos'];
+  let totalVisible = 0;
+
+  tables.forEach(tblId => {
+    const tbl = document.getElementById(tblId);
+    if (!tbl) return;
+    const rows = tbl.querySelectorAll('tr[data-month]');
+    rows.forEach(row => {
+      const month = row.getAttribute('data-month');
+      const show = filter === 'all' || month === filter;
+      row.style.display = show ? '' : 'none';
+      if (show) totalVisible++;
+    });
+  });
+
+  const countEl = document.getElementById('filterCount');
+  if (countEl) countEl.textContent = filter === 'all' ? '전체 ' + totalVisible + '건' : filter + ' 해당 ' + totalVisible + '건';
+}
+
+// ==================== 견적서 작성 ====================
+const pricingData = {
+  henkel_hc:{label:'헨켈 HomeCare',system:'헨켈 단가 체계',ref:'PKG NEW 275,000 / Variation 137,000 / Modify 100,000~50,000 / SHIP 68,000 / 팩샷 30,000 / WEB NEW 137,000 / WEB Var 68,000 / 썸네일 30,000 / 프로세스 141,000'},
+  henkel_bc:{label:'헨켈 BeautyCare',system:'헨켈 단가 체계',ref:'헨켈 HomeCare와 동일'},
+  henkel_lc:{label:'헨켈 Loctite',system:'헨켈 단가 체계 (소형)',ref:'헨켈 기준 동일 / 인계비 93,000원 적용'},
+  henkel_tm:{label:'헨켈 TM',system:'헨켈 단가 체계',ref:'헨켈 HomeCare와 동일'},
+  thermos:{label:'Thermos',system:'써모스 단가 체계',ref:'IC/Sleeves 신규 300,000 / 수정A 150,000 / 수정B 100,000 / Tag/Label 50,000 / IS수정 15,000/p / IMG 100,000 / SHIP 50,000'},
+  unilever:{label:'Unilever',system:'유니레버 단가 체계',ref:'PKG NEW 프로젝트 700,000 / 일반 500,000 / Modify 250,000 / SHIP 100,000 / WEB NEW 200,000 / WEB Var 100,000 / 리사이징 30,000'}
+};
+
+function updatePricing() {
+  const v = document.getElementById('estClient').value;
+  const d = pricingData[v];
+  if (d) {
+    document.getElementById('pricingSystem').value = d.system;
+    document.getElementById('pricingRef').textContent = d.ref;
+    document.getElementById('pricingLabel').textContent = d.label;
+    document.getElementById('pricingLabel').className = 'badge badge-done';
+  }
+}
+
+// ==================== 견적서 작성 (시트 기반) ====================
+const clientManagers = {
+  '헨켈 HomeCare': ['백서현','김민주','이사라','손희진','직접입력'],
+  '헨켈 BeautyCare': ['백서현','직접입력'],
+  '헨켈 TM': ['이사라','손희진','직접입력'],
+  '헨켈 Loctite': ['최진아','우명식','직접입력'],
+  'Thermos': ['박영은','박소윤','권유진','직접입력'],
+  'Unilever': ['정시연','이희상','이성화','직접입력'],
+};
+
+let sheets = [], activeSheetId = null, sheetCounter = 0;
+
+function newSheetData(tabName) {
+  sheetCounter++;
+  return { id:'sheet_'+sheetCounter, tabName:tabName||'시트'+sheetCounter, client:'', product:'', manager:'', date:new Date().toISOString().slice(0,10), brand:'', rows:[makeRow(1)] };
+}
+function makeRow(no) {
+  return {no:no||'', item:'', type1:'PKG', type2:'NEW', price:'', ea:'1', sample:'', sim:'', process:'', total:0, note:''};
+}
+
+function renderSheetTabs() {
+  const tabsEl = document.getElementById('sheetTabs');
+  tabsEl.innerHTML = '';
+  sheets.forEach(s => {
+    const tab = document.createElement('div');
+    tab.className = 'sheet-tab'+(s.id===activeSheetId?' active':'');
+    tab.innerHTML = `<span onclick="switchSheet('${s.id}')">${s.tabName}</span><span class="del-tab" onclick="deleteSheet('${s.id}')">✕</span>`;
+    tabsEl.appendChild(tab);
+  });
+}
+
+function renderSheetContent(sheet) {
+  document.getElementById('estcontent_'+sheet.id)?.remove();
+  const managers = clientManagers[sheet.client]||['직접입력'];
+  const mgrOpts = managers.map(m=>`<option ${m===sheet.manager?'selected':''}>${m}</option>`).join('');
+  const div = document.createElement('div');
+  div.className = 'est-sheet'+(sheet.id===activeSheetId?' active':'');
+  div.id = 'estcontent_'+sheet.id;
+  div.innerHTML = `
+    <div class="est-header-box">
+      <div class="est-header-grid">
+        <div class="form-group"><label>시트명 (탭 이름)</label><input type="text" value="${sheet.tabName}" onchange="updateSheetMeta('${sheet.id}','tabName',this.value)" placeholder="예: Persil_2월"></div>
+        <div class="form-group"><label>클라이언트 (Client)</label>
+          <select onchange="updateSheetClient('${sheet.id}',this.value)">
+            <option value="">선택</option>
+            ${['헨켈 HomeCare','헨켈 BeautyCare','헨켈 TM','헨켈 Loctite','Thermos','Unilever'].map(c=>`<option ${sheet.client===c?'selected':''}>${c}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group"><label>담당자 (Client 측)</label><select id="mgr_${sheet.id}" onchange="updateSheetMeta('${sheet.id}','manager',this.value)">${mgrOpts}</select></div>
+        <div class="form-group"><label>Product</label><input type="text" value="${sheet.product}" onchange="updateSheetMeta('${sheet.id}','product',this.value)" placeholder="예: Persil / 2월 월간견적"></div>
+        <div class="form-group"><label>Date</label><input type="date" value="${sheet.date}" onchange="updateSheetMeta('${sheet.id}','date',this.value)"></div>
+        <div class="form-group"><label>Brand</label><input type="text" value="${sheet.brand}" onchange="updateSheetMeta('${sheet.id}','brand',this.value)" placeholder="예: Persil, Pril"></div>
+      </div>
+    </div>
+    <div class="card" style="padding:0;overflow:auto">
+      <table class="est-items-table" id="itemtbl_${sheet.id}">
+        <thead><tr>
+          <th style="width:28px">No</th>
+          <th>품명 (ITEM)</th>
+          <th style="width:70px">분류</th>
+          <th style="width:80px">작업</th>
+          <th style="width:90px">단가 (Price)</th>
+          <th style="width:55px">수량 (EA)</th>
+          <th style="width:80px">교정/샘플</th>
+          <th style="width:80px">시뮬레이션</th>
+          <th style="width:85px">프로세스</th>
+          <th style="width:90px">합계 (Total)</th>
+          <th style="width:110px">비고</th>
+          <th style="width:30px"></th>
+        </tr></thead>
+        <tbody id="itembody_${sheet.id}"></tbody>
+      </table>
+      <button class="btn-row-add" onclick="addRow('${sheet.id}')"><i class="ti ti-plus"></i> 행 추가</button>
+    </div>
+    <div class="est-total-row">
+      <span style="font-size:13px;color:var(--color-text2)">합 계</span>
+      <span style="font-size:18px;font-weight:700" id="total_${sheet.id}">0 원</span>
+      <span style="font-size:11px;color:var(--color-text3)">* 부가세 별도</span>
+    </div>`;
+  document.getElementById('sheetContents').appendChild(div);
+  renderRows(sheet);
+}
+
+function renderRows(sheet) {
+  const tbody = document.getElementById('itembody_'+sheet.id);
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  const typeOpts = ['PKG','WEB','IMG','POSM','Print','Sample','IC','Sleeves','IS','Tag','Label','ETC'].map(t=>`<option>${t}</option>`).join('');
+  const workOpts = ['NEW','Variation','Modify','수정A','수정B','수정',''].map(t=>`<option>${t}</option>`).join('');
+  sheet.rows.forEach((row, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="center"><input type="text" value="${row.no}" style="width:24px;text-align:center;border:none;background:transparent" onchange="updateRow('${sheet.id}',${idx},'no',this.value)"></td>
+      <td><input type="text" value="${row.item}" style="width:100%;min-width:200px;border:none;background:transparent" placeholder="품목명" onchange="updateRow('${sheet.id}',${idx},'item',this.value)"></td>
+      <td class="center"><select style="width:100%;font-size:12px;border:none;background:transparent" onchange="updateRow('${sheet.id}',${idx},'type1',this.value)">${typeOpts.replace(`<option>${row.type1}`,`<option selected>${row.type1}`)}</select></td>
+      <td class="center"><select style="width:100%;font-size:12px;border:none;background:transparent" onchange="updateRow('${sheet.id}',${idx},'type2',this.value)">${workOpts.replace(`<option>${row.type2}`,`<option selected>${row.type2}`)}</select></td>
+      <td class="num"><input type="number" value="${row.price}" placeholder="0" style="width:100%;text-align:right;border:none;background:transparent" oninput="updateRow('${sheet.id}',${idx},'price',this.value);calcRow('${sheet.id}',${idx})"></td>
+      <td class="num"><input type="number" value="${row.ea}" placeholder="1" style="width:100%;text-align:right;border:none;background:transparent" oninput="updateRow('${sheet.id}',${idx},'ea',this.value);calcRow('${sheet.id}',${idx})"></td>
+      <td class="num"><input type="number" value="${row.sample}" placeholder="" style="width:100%;text-align:right;border:none;background:transparent" oninput="updateRow('${sheet.id}',${idx},'sample',this.value);calcRow('${sheet.id}',${idx})"></td>
+      <td class="num"><input type="number" value="${row.sim}" placeholder="" style="width:100%;text-align:right;border:none;background:transparent" oninput="updateRow('${sheet.id}',${idx},'sim',this.value);calcRow('${sheet.id}',${idx})"></td>
+      <td class="num"><input type="number" value="${row.process}" placeholder="" style="width:100%;text-align:right;border:none;background:transparent" oninput="updateRow('${sheet.id}',${idx},'process',this.value);calcRow('${sheet.id}',${idx})"></td>
+      <td class="num" id="rt_${sheet.id}_${idx}" style="font-weight:600">${row.total?row.total.toLocaleString():'0'}</td>
+      <td><input type="text" value="${row.note}" style="width:100%;border:none;background:transparent" onchange="updateRow('${sheet.id}',${idx},'note',this.value)"></td>
+      <td class="center"><span style="cursor:pointer;color:var(--color-text3)" onclick="deleteRow('${sheet.id}',${idx})">✕</span></td>`;
+    tbody.appendChild(tr);
+  });
+  calcSheetTotal(sheet.id);
+}
+
+function updateSheetMeta(id, key, val) {
+  const s = sheets.find(s=>s.id===id); if(!s)return;
+  s[key]=val;
+  if(key==='tabName') renderSheetTabs();
+}
+function updateSheetClient(id, val) {
+  const s = sheets.find(s=>s.id===id); if(!s)return;
+  s.client=val;
+  const sel = document.getElementById('mgr_'+id);
+  if(sel){ const mgrs=clientManagers[val]||['직접입력']; sel.innerHTML=mgrs.map(m=>`<option>${m}</option>`).join(''); s.manager=mgrs[0]; }
+}
+function updateRow(sheetId, idx, key, val) { const s=sheets.find(s=>s.id===sheetId); if(s&&s.rows[idx]) s.rows[idx][key]=val; }
+function calcRow(sheetId, idx) {
+  const s=sheets.find(s=>s.id===sheetId); if(!s||!s.rows[idx])return;
+  const r=s.rows[idx];
+  r.total=(parseInt(r.price)||0)*(parseInt(r.ea)||0)+(parseInt(r.sample)||0)+(parseInt(r.sim)||0)+(parseInt(r.process)||0);
+  const el=document.getElementById('rt_'+sheetId+'_'+idx); if(el) el.textContent=r.total.toLocaleString();
+  calcSheetTotal(sheetId);
+}
+function calcSheetTotal(sheetId) {
+  const s=sheets.find(s=>s.id===sheetId); if(!s)return;
+  const t=s.rows.reduce((a,r)=>a+(parseInt(r.total)||0),0);
+  const el=document.getElementById('total_'+sheetId); if(el) el.textContent=t.toLocaleString()+' 원';
+}
+function addRow(sheetId) { const s=sheets.find(s=>s.id===sheetId); if(!s)return; s.rows.push(makeRow('')); renderRows(s); }
+function deleteRow(sheetId, idx) { const s=sheets.find(s=>s.id===sheetId); if(!s||s.rows.length<=1)return; s.rows.splice(idx,1); renderRows(s); }
+
+function addSheet() {
+  const s=newSheetData(); sheets.push(s); activeSheetId=s.id;
+  renderSheetTabs(); renderSheetContent(s);
+  document.querySelectorAll('.est-sheet').forEach(el=>el.classList.remove('active'));
+  document.getElementById('estcontent_'+s.id)?.classList.add('active');
+}
+function switchSheet(id) {
+  activeSheetId=id; renderSheetTabs();
+  document.querySelectorAll('.est-sheet').forEach(el=>el.classList.remove('active'));
+  document.getElementById('estcontent_'+id)?.classList.add('active');
+}
+function deleteSheet(id) {
+  if(sheets.length<=1){alert('최소 1개의 시트가 있어야 합니다.');return;}
+  if(!confirm('이 시트를 삭제할까요?'))return;
+  sheets=sheets.filter(s=>s.id!==id);
+  document.getElementById('estcontent_'+id)?.remove();
+  activeSheetId=sheets[sheets.length-1].id;
+  renderSheetTabs(); switchSheet(activeSheetId);
+}
+function resetEstimate() {
+  if(!confirm('모든 시트를 초기화할까요?'))return;
+  sheets=[]; sheetCounter=0;
+  document.getElementById('sheetTabs').innerHTML='';
+  document.getElementById('sheetContents').innerHTML='';
+  addSheet();
+}
+function generateEstimate() {
+  alert('Excel 다운로드 기능은 다음 단계에서 연결됩니다.\n입력된 시트 수: '+sheets.length+'개\n시트명: '+sheets.map(s=>s.tabName).join(', '));
+}
+
+// 초기 시트 생성
+addSheet();
+
+// ==================== 누락 확인 ====================
+function markOk(btn) {
+  const item = btn.closest('.missing-item');
+  const brand = item.querySelector('.brand').textContent;
+  const name = item.querySelector('.item').textContent;
+  okItems.push({brand, name});
+  item.remove();
+  const badge = document.getElementById('missBadge');
+  badge.textContent = Math.max(0, parseInt(badge.textContent) - 1);
+  const okList = document.getElementById('okList');
+  if (okItems.length === 1) okList.innerHTML = '';
+  const d = document.createElement('div');
+  d.className = 'missing-item';
+  d.innerHTML = `<div><div class="brand">${brand}</div><div class="item">${name}</div></div><span class="badge badge-done">확인완료</span>`;
+  okList.appendChild(d);
+  document.getElementById('okCount').textContent = okItems.length + '건';
+}
+
+
+</script>
+</body>
+</html>
