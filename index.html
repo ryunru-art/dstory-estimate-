@@ -564,9 +564,131 @@ async function syncSheets() {
 }
 
 function renderSyncedData(data) {
-  // 실제 연동 시 여기서 테이블을 동적으로 채웁니다
-  // 현재는 샘플 데이터 표시 유지
+  // 타입 분류: _type 필드 기준, 없으면 컬럼으로 추측
+  const henkel = data.filter(r => {
+    const t = (r._type||'').toLowerCase();
+    if (t === 'henkel') return true;
+    if (t === 'unilever' || t === 'thermos') return false;
+    // _type 없으면 컬럼으로 추측: Brand 컬럼 없고 Part/작업시작 있으면 헨켈
+    return !r['Brand'] && !r['brand'];
+  });
+  const unilever = data.filter(r => {
+    const t = (r._type||'').toLowerCase();
+    if (t === 'unilever') return true;
+    if (t === 'henkel' || t === 'thermos') return false;
+    return (r['Brand']||r['brand']||'').toString().match(/snuggle|lipton|vaseline|dove|knorr|ponds|derma/i);
+  });
+  const thermos = data.filter(r => {
+    const t = (r._type||'').toLowerCase();
+    if (t === 'thermos') return true;
+    if (t === 'henkel' || t === 'unilever') return false;
+    return (r['Brand']||r['brand']||'').toString().match(/thermos/i);
+  });
+
+  renderWorklogTable('tbl-henkel', henkel, 'henkel');
+  renderWorklogTable('tbl-unilever', unilever, 'unilever');
+  renderWorklogTable('tbl-thermos', thermos, 'thermos');
+  updateDashboard(data);
   filterWorklog();
+}
+
+function renderWorklogTable(tableId, rows, type) {
+  const tbl = document.getElementById(tableId);
+  if (!tbl || rows.length === 0) return;
+
+  // 헤더 행 보존
+  const headerRow = tbl.querySelector('tr:first-child');
+  tbl.innerHTML = '';
+  tbl.appendChild(headerRow);
+
+  // 컬럼 키 매핑 (헨켈/유니레버/써모스 공통 후보)
+  const colMap = {
+    part:    ['Part','part','Brand','brand','브랜드'],
+    start:   ['작업시작','작업 시작','Date','date'],
+    manager: ['담당자','담당자','manager'],
+    worker:  ['작업자','worker'],
+    item:    ['품목','ITEM','Item','item','품명'],
+    type:    ['분류','Type','type','작업'],
+    qty:     ['품목수량','수량','EA','ea','Qty'],
+    status:  ['진행상황','진행/완료','Status','status','진행 상황'],
+  };
+
+  function getVal(row, candidates) {
+    for (const k of candidates) {
+      if (row[k] !== undefined && row[k] !== null && row[k] !== '') return row[k];
+    }
+    return '';
+  }
+
+  rows.forEach(row => {
+    const tr = document.createElement('tr');
+    const startVal = String(getVal(row, colMap.start));
+    const monthCode = startVal.replace(/-/g,'').substring(0,3);
+    if (monthCode) tr.setAttribute('data-month', monthCode);
+
+    const statusVal = String(getVal(row, colMap.status));
+    let badgeCls = 'badge-pend';
+    if (statusVal.match(/완료|done|complete/i)) badgeCls = 'badge-done';
+    else if (statusVal.match(/진행|작업중|progress|진행중/i)) badgeCls = 'badge-prog';
+
+    const headers = Array.from(headerRow.querySelectorAll('th'));
+    headers.forEach(th => {
+      const td = document.createElement('td');
+      const label = th.textContent.trim();
+
+      if (label.match(/진행상황|진행\/완료|Status/i)) {
+        td.innerHTML = `<span class="badge ${badgeCls}">${statusVal||'-'}</span>`;
+      } else if (label.match(/Part|Brand|브랜드/i)) {
+        td.textContent = getVal(row, colMap.part);
+      } else if (label.match(/작업시작|Date/i)) {
+        td.textContent = startVal;
+      } else if (label.match(/담당자/i)) {
+        td.textContent = getVal(row, colMap.manager);
+      } else if (label.match(/작업자/i)) {
+        td.textContent = getVal(row, colMap.worker);
+      } else if (label.match(/품목|ITEM/i)) {
+        td.textContent = getVal(row, colMap.item);
+      } else if (label.match(/분류|Type/i)) {
+        td.textContent = getVal(row, colMap.type);
+      } else if (label.match(/수량|EA/i)) {
+        td.textContent = getVal(row, colMap.qty);
+      } else {
+        // 그 외 컬럼은 컬럼명으로 직접 매칭 시도
+        td.textContent = row[label] !== undefined ? row[label] : '';
+      }
+      tr.appendChild(td);
+    });
+    tbl.appendChild(tr);
+  });
+}
+
+function updateDashboard(data) {
+  // 진행중 업무 수 업데이트
+  const inProgress = data.filter(r => {
+    const s = String(r['진행상황']||r['Status']||r['status']||'');
+    return s.match(/진행|작업중|progress/i);
+  });
+  const valEl = document.querySelector('.stat-card .value');
+  // 대시보드 최근 업무일지 테이블 업데이트
+  const dashTbl = document.querySelector('#page-dashboard .card table');
+  if (dashTbl && data.length > 0) {
+    const header = dashTbl.querySelector('tr:first-child');
+    dashTbl.innerHTML = '';
+    dashTbl.appendChild(header);
+    const recent = data.slice(-5).reverse(); // 최근 5건
+    recent.forEach(row => {
+      const s = String(row['진행상황']||row['Status']||row['status']||'');
+      let cls = 'badge-pend';
+      if (s.match(/완료|done/i)) cls = 'badge-done';
+      else if (s.match(/진행|작업중/i)) cls = 'badge-prog';
+      const tr = document.createElement('tr');
+      const worker = row['작업자']||row['worker']||'-';
+      const brand = row['Part']||row['Brand']||row['brand']||'-';
+      const item = row['품목']||row['ITEM']||row['Item']||row['item']||'-';
+      tr.innerHTML = `<td>${worker}</td><td>${brand}</td><td>${item}</td><td><span class="badge ${cls}">${s||'-'}</span></td>`;
+      dashTbl.appendChild(tr);
+    });
+  }
 }
 
 // 저장된 동기화 상태 복원
@@ -578,6 +700,11 @@ window.addEventListener('load', () => {
       statusEl.className = 'sync-status synced';
       statusEl.textContent = '마지막 동기화: ' + lastSync;
     }
+  }
+  // 저장된 데이터 복원해서 화면에 표시
+  const saved = localStorage.getItem('worklogData');
+  if (saved) {
+    try { renderSyncedData(JSON.parse(saved)); } catch(e) {}
   }
 });
 
